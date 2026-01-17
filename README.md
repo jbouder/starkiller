@@ -18,8 +18,11 @@ Starkiller reimagines traditional BI dashboarding by using AI to dynamically cre
 
 ### Frontend
 
-- **React**: Modern, component-based UI framework
-- **Visualization Libraries**: Recharts for data visualization
+- **React 19** with TypeScript
+- **Vite** for fast development and building
+- **Tailwind CSS** for styling (dark mode default)
+- **shadcn/ui** for accessible UI components
+- **Recharts** for data visualization
 
 ### Backend
 
@@ -29,7 +32,47 @@ Starkiller reimagines traditional BI dashboarding by using AI to dynamically cre
 
 ## Getting Started
 
-_Coming soon_
+### Prerequisites
+
+- Node.js 18+
+- npm 9+
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/starkiller.git
+cd starkiller
+
+# Install dependencies
+npm install
+```
+
+### Development
+
+```bash
+# Start the UI development server
+npm run dev
+```
+
+### Build
+
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### Adding UI Components
+
+shadcn/ui components can be added as needed:
+
+```bash
+cd ui
+npx shadcn@latest add <component-name>
+```
 
 ## License
 
