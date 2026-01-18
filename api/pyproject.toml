@@ -15,6 +15,8 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.45",
     "alembic>=1.18.1",
     "aiosqlite>=0.18.0",
+    "psycopg2-binary>=2.9.10",
+    "asyncpg>=0.30.0",
 
     # LLM Provider (Anthropic as primary)
     "anthropic>=0.76.0",
@@ -42,6 +44,9 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
 
 [tool.black]
 line-length = 88

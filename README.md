@@ -50,6 +50,18 @@ git clone https://github.com/yourusername/starkiller.git
 cd starkiller
 ```
 
+### Running with Docker
+
+You can run the entire stack (API, UI, Database) using Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+- **UI**: http://localhost:3000 (proxies API requests to backend)
+- **API**: http://localhost:8000
+- **Database**: Port 5432
+
 ### Backend Setup
 
 ```bash
@@ -68,16 +80,19 @@ cp .env.example .env
 ```
 
 Edit `.env` and add your Anthropic API key:
+
 ```bash
 ANTHROPIC_API_KEY=sk-ant-your-key-here
 ```
 
 Start the API server:
+
 ```bash
 uvicorn main:app --reload
 ```
 
 The API will be available at:
+
 - API: http://localhost:8000
 - Swagger Docs: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
@@ -102,6 +117,7 @@ The frontend will be available at http://localhost:5173
 For full functionality, run both the API and frontend in separate terminals:
 
 **Terminal 1 (API):**
+
 ```bash
 cd api
 source .venv/bin/activate
@@ -109,6 +125,7 @@ uvicorn main:app --reload
 ```
 
 **Terminal 2 (Frontend):**
+
 ```bash
 cd ui
 npm run dev
@@ -147,33 +164,33 @@ npx shadcn@latest add <component-name>
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/health` | Health check |
-| GET | `/api/v1/health/ready` | Readiness check (DB, LLM) |
-| POST | `/api/v1/query` | Process natural language query |
-| GET | `/api/v1/query/history` | Get query history |
-| POST | `/api/v1/data-sources` | Create data source |
-| GET | `/api/v1/data-sources` | List data sources |
-| GET | `/api/v1/data-sources/{id}` | Get data source |
-| PATCH | `/api/v1/data-sources/{id}` | Update data source |
-| DELETE | `/api/v1/data-sources/{id}` | Delete data source |
-| POST | `/api/v1/data-sources/{id}/test` | Test connection |
+| Method | Endpoint                         | Description                    |
+| ------ | -------------------------------- | ------------------------------ |
+| GET    | `/api/v1/health`                 | Health check                   |
+| GET    | `/api/v1/health/ready`           | Readiness check (DB, LLM)      |
+| POST   | `/api/v1/query`                  | Process natural language query |
+| GET    | `/api/v1/query/history`          | Get query history              |
+| POST   | `/api/v1/data-sources`           | Create data source             |
+| GET    | `/api/v1/data-sources`           | List data sources              |
+| GET    | `/api/v1/data-sources/{id}`      | Get data source                |
+| PATCH  | `/api/v1/data-sources/{id}`      | Update data source             |
+| DELETE | `/api/v1/data-sources/{id}`      | Delete data source             |
+| POST   | `/api/v1/data-sources/{id}/test` | Test connection                |
 
 ## Environment Variables
 
 ### API (.env)
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `ENVIRONMENT` | development, staging, production | development |
-| `DEBUG` | Enable debug mode | true |
-| `HOST` | API host | 0.0.0.0 |
-| `PORT` | API port | 8000 |
-| `CORS_ORIGINS` | Allowed CORS origins | http://localhost:5173 |
-| `DATABASE_URL` | Database connection string | sqlite+aiosqlite:///./starkiller.db |
-| `ANTHROPIC_API_KEY` | Anthropic API key | (required) |
-| `ANTHROPIC_MODEL` | Claude model to use | claude-sonnet-4-5-20250929 |
+| Variable            | Description                      | Default                             |
+| ------------------- | -------------------------------- | ----------------------------------- |
+| `ENVIRONMENT`       | development, staging, production | development                         |
+| `DEBUG`             | Enable debug mode                | true                                |
+| `HOST`              | API host                         | 0.0.0.0                             |
+| `PORT`              | API port                         | 8000                                |
+| `CORS_ORIGINS`      | Allowed CORS origins             | http://localhost:5173               |
+| `DATABASE_URL`      | Database connection string       | sqlite+aiosqlite:///./starkiller.db |
+| `ANTHROPIC_API_KEY` | Anthropic API key                | (required)                          |
+| `ANTHROPIC_MODEL`   | Claude model to use              | claude-sonnet-4-5-20250929          |
 
 ## License
 
