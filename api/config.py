@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///./starkiller.db"
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller"
 
     # LLM Configuration
     llm_provider: Literal["anthropic"] = "anthropic"

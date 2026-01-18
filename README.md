@@ -33,6 +33,46 @@ Starkiller reimagines traditional BI dashboarding by using AI to dynamically cre
 - **Alembic**: Database migrations
 - **Pydantic**: Request/response validation
 
+## Database Setup
+
+The application uses PostgreSQL (v15+).
+
+### Migrations
+
+Initialize the database schema using Alembic:
+
+```bash
+# Local
+cd api
+alembic upgrade head
+
+# Docker
+docker compose run --rm api alembic upgrade head
+```
+
+### Seeding Data
+
+Run the following scripts to seed the database with sample data.
+
+#### 1. Seed External Systems (Prerequisite)
+
+Creates "external" databases (`production_db`, `analytics`) and generates sample CSV files.
+
+```bash
+# Local (requires local Postgres running)
+export ADMIN_DB_URL=postgresql://postgres:postgres@localhost:5432/postgres
+python scripts/seed_connection_data.py
+```
+
+#### 2. Seed Application Data
+
+Populates the `starkiller` database with sample Data Sources pointing to the external systems.
+
+```bash
+# Local
+python scripts/seed_data_sources.py
+```
+
 ## Getting Started
 
 ### Prerequisites
@@ -181,16 +221,16 @@ npx shadcn@latest add <component-name>
 
 ### API (.env)
 
-| Variable            | Description                      | Default                             |
-| ------------------- | -------------------------------- | ----------------------------------- |
-| `ENVIRONMENT`       | development, staging, production | development                         |
-| `DEBUG`             | Enable debug mode                | true                                |
-| `HOST`              | API host                         | 0.0.0.0                             |
-| `PORT`              | API port                         | 8000                                |
-| `CORS_ORIGINS`      | Allowed CORS origins             | http://localhost:5173               |
-| `DATABASE_URL`      | Database connection string       | sqlite+aiosqlite:///./starkiller.db |
-| `ANTHROPIC_API_KEY` | Anthropic API key                | (required)                          |
-| `ANTHROPIC_MODEL`   | Claude model to use              | claude-sonnet-4-5-20250929          |
+| Variable            | Description                      | Default                                                          |
+| ------------------- | -------------------------------- | ---------------------------------------------------------------- |
+| `ENVIRONMENT`       | development, staging, production | development                                                      |
+| `DEBUG`             | Enable debug mode                | true                                                             |
+| `HOST`              | API host                         | 0.0.0.0                                                          |
+| `PORT`              | API port                         | 8000                                                             |
+| `CORS_ORIGINS`      | Allowed CORS origins             | http://localhost:5173                                            |
+| `DATABASE_URL`      | Database connection string       | postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller |
+| `ANTHROPIC_API_KEY` | Anthropic API key                | (required)                                                       |
+| `ANTHROPIC_MODEL`   | Claude model to use              | claude-sonnet-4-5-20250929                                       |
 
 ## License
 
