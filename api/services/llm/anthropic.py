@@ -26,9 +26,29 @@ class AnthropicProvider(BaseLLMProvider):
         natural_language: str,
         schema_info: dict[str, Any],
         context: str | None = None,
+        source_type: str = "csv",
     ) -> dict[str, Any]:
-        """Generate a pandas query from natural language using Claude."""
-        system_prompt = """You are a data analyst assistant that converts natural language questions into pandas code.
+        """Generate a query from natural language using Claude."""
+        if source_type == "postgresql":
+            system_prompt = """You are a data analyst assistant that converts natural language questions into PostgreSQL queries.
+Given a database schema and a natural language question, generate a SQL query that answers the question.
+
+IMPORTANT RULES:
+1. Return ONLY valid PostgreSQL SQL that can be executed directly
+2. Use double quotes for table and column names that may conflict with reserved words
+3. Limit results to a reasonable number (e.g., LIMIT 100) unless aggregating
+4. Use appropriate JOINs when data spans multiple tables
+5. Handle NULL values appropriately
+6. Include ORDER BY for meaningful sorting when applicable
+
+Respond with a JSON object containing:
+- "query": The SQL query as a string (no markdown, no code blocks, just the SQL)
+- "query_type": Always "sql"
+- "explanation": Brief explanation of what the query does"""
+            query_type_label = "sql"
+            instruction = "Generate the PostgreSQL query to answer this question."
+        else:
+            system_prompt = """You are a data analyst assistant that converts natural language questions into pandas code.
 Given a data schema and a natural language question, generate Python pandas code that answers the question.
 
 IMPORTANT RULES:
@@ -43,6 +63,8 @@ Respond with a JSON object containing:
 - "query": The pandas code as a string
 - "query_type": Always "pandas"
 - "explanation": Brief explanation of what the code does"""
+            query_type_label = "pandas"
+            instruction = "Generate the pandas code to answer this question."
 
         user_message = f"""Schema Information:
 {json.dumps(schema_info, indent=2)}
@@ -51,7 +73,7 @@ Respond with a JSON object containing:
 
 Natural Language Question: {natural_language}
 
-Generate the pandas code to answer this question."""
+{instruction}"""
 
         try:
             response = await self.client.messages.create(
@@ -76,7 +98,7 @@ Generate the pandas code to answer this question."""
                 result = json.loads(json_str)
                 return {
                     "query": result.get("query", ""),
-                    "query_type": result.get("query_type", "pandas"),
+                    "query_type": result.get("query_type", query_type_label),
                     "explanation": result.get("explanation", ""),
                 }
             except json.JSONDecodeError:
@@ -84,8 +106,8 @@ Generate the pandas code to answer this question."""
                 logger.warning("Failed to parse JSON response, extracting code directly")
                 return {
                     "query": content,
-                    "query_type": "pandas",
-                    "explanation": "Generated pandas code",
+                    "query_type": query_type_label,
+                    "explanation": f"Generated {query_type_label} query",
                 }
 
         except Exception as e:

@@ -1,30 +1,34 @@
-import { DataSourceGrid } from "@/components/data-sources/DataSourceGrid";
-import { VisualizationView } from "@/components/visualizations/VisualizationView";
-import { useQuery } from "@/context/QueryContext";
-import { useDataSources } from "@/hooks/useDataSources";
-import type { DataSource } from "@/lib/types/api";
+import { DashboardGrid } from "@/components/dashboards/DashboardGrid";
+import { DynamicDashboard } from "@/components/dynamic/DynamicDashboard";
+import { useDashboards } from "@/hooks/useDashboards";
+import { useDashboardGeneration } from "@/hooks/useDashboardGeneration";
+import type { Dashboard } from "@/lib/types/dashboard";
 
-interface MainContentProps {
-  onDataSourceSelect: (dataSource: DataSource) => void;
-  selectedDataSourceId: string | null;
-}
+export function MainContent() {
+  const { dashboards, isLoading, error } = useDashboards();
+  const {
+    generatedDashboard,
+    isGenerating,
+    error: generationError,
+    generate,
+    clear,
+  } = useDashboardGeneration();
 
-export function MainContent({ onDataSourceSelect, selectedDataSourceId }: MainContentProps) {
-  const { dataSources, isLoading, error } = useDataSources();
-  const { queryResult, isExecuting, error: queryError, clearQuery } = useQuery();
+  const showGeneratedDashboard =
+    generatedDashboard !== null || isGenerating || generationError !== null;
 
-  const selectedDataSource = dataSources.find((ds) => ds.id === selectedDataSourceId);
-  const showVisualization = queryResult !== null || isExecuting || queryError !== null;
+  const handleDashboardClick = async (dashboard: Dashboard) => {
+    await generate(dashboard.id);
+  };
 
-  if (showVisualization) {
+  if (showGeneratedDashboard) {
     return (
       <main className="container py-6">
-        <VisualizationView
-          queryResult={queryResult}
-          isLoading={isExecuting}
-          error={queryError}
-          dataSourceName={selectedDataSource?.name}
-          onBack={clearQuery}
+        <DynamicDashboard
+          generatedDashboard={generatedDashboard}
+          isLoading={isGenerating}
+          error={generationError}
+          onBack={clear}
         />
       </main>
     );
@@ -33,16 +37,16 @@ export function MainContent({ onDataSourceSelect, selectedDataSourceId }: MainCo
   return (
     <main className="container py-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Data Sources</h1>
+        <h1 className="text-3xl font-bold">Dashboards</h1>
         <p className="text-muted-foreground">
-          Select a data source to explore your data
+          Select a dashboard to generate visualizations
         </p>
       </div>
-      <DataSourceGrid
-        dataSources={dataSources}
+      <DashboardGrid
+        dashboards={dashboards}
         isLoading={isLoading}
         error={error}
-        onDataSourceClick={onDataSourceSelect}
+        onDashboardClick={handleDashboardClick}
       />
     </main>
   );

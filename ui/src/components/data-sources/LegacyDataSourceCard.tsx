@@ -8,7 +8,7 @@ interface DataSourceCardProps {
   onClick: (dataSource: DataSource) => void;
 }
 
-export function DataSourceCard({ dataSource, onClick }: DataSourceCardProps) {
+export function LegacyDataSourceCard({ dataSource, onClick }: DataSourceCardProps) {
   const Icon = dataSource.source_type === "postgresql" ? Database : FileSpreadsheet;
   const badgeVariant = dataSource.source_type === "postgresql" ? "default" : "secondary";
 

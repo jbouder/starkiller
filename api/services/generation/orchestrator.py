@@ -232,6 +232,7 @@ class DashboardGenerationOrchestrator:
                 natural_language=query_prompt,
                 schema_info=schema_dict,
                 context=f"Dashboard: {dashboard_description}",
+                source_type=data_source.source_type,
             )
 
             # Execute the query to get sample data

@@ -1,17 +1,17 @@
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DataSourceCard } from "./DataSourceCard";
-import type { DataSource } from "@/lib/types/api";
+import { DashboardCard } from "./DashboardCard";
+import type { Dashboard } from "@/lib/types/dashboard";
 
-interface DataSourceGridProps {
-  dataSources: DataSource[];
+interface DashboardGridProps {
+  dashboards: Dashboard[];
   isLoading: boolean;
   error: Error | null;
-  onDataSourceClick: (dataSource: DataSource) => void;
+  onDashboardClick: (dashboard: Dashboard) => void;
 }
 
-function DataSourceCardSkeleton() {
+function DashboardCardSkeleton() {
   return (
     <div className="rounded-lg border bg-card p-6">
       <div className="flex items-start justify-between pb-3">
@@ -19,7 +19,7 @@ function DataSourceCardSkeleton() {
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-6 w-32" />
         </div>
-        <Skeleton className="h-5 w-20" />
+        <Skeleton className="h-5 w-12" />
       </div>
       <Skeleton className="h-4 w-full mb-4" />
       <Skeleton className="h-4 w-24" />
@@ -27,19 +27,19 @@ function DataSourceCardSkeleton() {
   );
 }
 
-export function DataSourceGrid({
-  dataSources,
+export function DashboardGrid({
+  dashboards,
   isLoading,
   error,
-  onDataSourceClick,
-}: DataSourceGridProps) {
+  onDashboardClick,
+}: DashboardGridProps) {
   if (error) {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
-          Failed to load data sources: {error.message}
+          Failed to load dashboards: {error.message}
         </AlertDescription>
       </Alert>
     );
@@ -49,18 +49,18 @@ export function DataSourceGrid({
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <DataSourceCardSkeleton key={i} />
+          <DashboardCardSkeleton key={i} />
         ))}
       </div>
     );
   }
 
-  if (dataSources.length === 0) {
+  if (dashboards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-lg font-medium text-muted-foreground">No data sources found</p>
+        <p className="text-lg font-medium text-muted-foreground">No dashboards found</p>
         <p className="text-sm text-muted-foreground">
-          Connect a data source to get started
+          Create a dashboard to get started
         </p>
       </div>
     );
@@ -68,11 +68,11 @@ export function DataSourceGrid({
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {dataSources.map((dataSource) => (
-        <DataSourceCard
-          key={dataSource.id}
-          dataSource={dataSource}
-          onClick={onDataSourceClick}
+      {dashboards.map((dashboard) => (
+        <DashboardCard
+          key={dashboard.id}
+          dashboard={dashboard}
+          onClick={onDashboardClick}
         />
       ))}
     </div>
