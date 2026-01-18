@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 from core.database import init_db
 from core.logging import setup_logging
-from routes import data_sources, health, query
+from routes import dashboards, data_sources, health, query
 
 settings = get_settings()
 
@@ -50,6 +50,9 @@ def create_app() -> FastAPI:
     app.include_router(query.router, prefix=settings.api_v1_prefix, tags=["Query"])
     app.include_router(
         data_sources.router, prefix=settings.api_v1_prefix, tags=["Data Sources"]
+    )
+    app.include_router(
+        dashboards.router, prefix=settings.api_v1_prefix, tags=["Dashboards"]
     )
 
     return app
