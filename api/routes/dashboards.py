@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from core.database import get_db_session
+from core.exceptions import GenerationException
 from models.dashboard import Dashboard
 from models.data_source import DataSource
 from schemas.dashboard import (
@@ -14,6 +15,8 @@ from schemas.dashboard import (
     DashboardUpdate,
 )
 from schemas.data_source import DataSourceResponse, SchemaInfo
+from schemas.generation import GenerateRequest, GenerateResponse
+from services.generation import DashboardGenerationOrchestrator
 
 router = APIRouter()
 
@@ -177,3 +180,32 @@ async def delete_dashboard(
         raise HTTPException(status_code=404, detail="Dashboard not found")
 
     await db.delete(dashboard)
+
+
+@router.post("/dashboards/{dashboard_id}/generate", response_model=GenerateResponse)
+async def generate_dashboard(
+    dashboard_id: str,
+    request: GenerateRequest | None = None,
+    db: AsyncSession = Depends(get_db_session),
+) -> GenerateResponse:
+    """
+    Generate React visualization code for a dashboard.
+
+    This endpoint uses LLM to:
+    1. Analyze the dashboard's associated data sources
+    2. Generate appropriate data queries
+    3. Create React/Recharts visualization code
+
+    The optional request body can include:
+    - query: Natural language query to customize the visualization
+    - visualization_preferences: Chart types, color scheme, layout preferences
+    """
+    orchestrator = DashboardGenerationOrchestrator(db)
+
+    try:
+        return await orchestrator.generate(dashboard_id, request)
+    except GenerationException as e:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": e.__class__.__name__, "message": e.message, "details": e.details},
+        )

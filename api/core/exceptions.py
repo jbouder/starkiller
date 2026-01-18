@@ -76,3 +76,27 @@ class VisualizationGenerationError(VisualizationException):
     """Failed to generate visualization."""
 
     pass
+
+
+class GenerationException(StarkillerException):
+    """Base exception for dashboard generation errors."""
+
+    pass
+
+
+class GenerationNoDataSourcesError(GenerationException):
+    """Dashboard has no associated data sources."""
+
+    pass
+
+
+class GenerationQueryExecutionError(GenerationException):
+    """Failed to execute queries for generation."""
+
+    pass
+
+
+class GenerationCodeError(GenerationException):
+    """Failed to generate React visualization code."""
+
+    pass

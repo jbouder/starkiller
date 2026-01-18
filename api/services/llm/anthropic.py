@@ -202,3 +202,140 @@ Recommend the best visualization for this data."""
         except Exception as e:
             logger.error("Anthropic health check failed", error=str(e))
             return False
+
+    async def generate_react_visualization(
+        self,
+        dashboard_context: dict[str, Any],
+        data_samples: list[dict[str, Any]],
+        preferences: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Generate React visualization code for a dashboard using Claude."""
+        system_prompt = """You are an expert React developer specializing in data visualization.
+Generate production-ready React code using:
+- React 18+ functional components with hooks
+- Recharts library for all visualizations
+- Tailwind CSS for styling
+- Responsive design with ResponsiveContainer
+
+IMPORTANT RULES:
+1. Create a single exportable Dashboard component
+2. Use ResponsiveContainer for all charts to ensure responsiveness
+3. Include proper TypeScript-style prop types in comments
+4. Use Tailwind CSS classes for all styling
+5. Make the code self-contained and immediately usable
+6. Include sample data transformation if needed
+7. Use modern React patterns (hooks, functional components)
+
+Respond with a JSON object containing:
+- "react_code": Complete exportable Dashboard component code as a string
+- "components": Array of objects with: name, chart_type, description, data_keys
+- "reasoning": Brief explanation of design decisions"""
+
+        # Build user message with dashboard context
+        user_message = self._build_visualization_prompt(
+            dashboard_context, data_samples, preferences
+        )
+
+        try:
+            response = await self.client.messages.create(
+                model=self.model,
+                max_tokens=8192,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_message}],
+            )
+
+            content = response.content[0].text
+
+            # Parse JSON response
+            try:
+                if "```json" in content:
+                    json_str = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    json_str = content.split("```")[1].split("```")[0].strip()
+                else:
+                    json_str = content.strip()
+
+                result = json.loads(json_str)
+                return {
+                    "react_code": result.get("react_code", ""),
+                    "components": result.get("components", []),
+                    "reasoning": result.get("reasoning", ""),
+                    "model": self.model,
+                }
+            except json.JSONDecodeError:
+                logger.warning("Failed to parse visualization JSON, extracting code")
+                # Try to extract code block directly
+                code = self._extract_code_from_response(content)
+                return {
+                    "react_code": code,
+                    "components": [],
+                    "reasoning": "Generated React visualization code",
+                    "model": self.model,
+                }
+
+        except Exception as e:
+            logger.error("Error generating React visualization", error=str(e))
+            raise LLMResponseError(f"Failed to generate visualization: {str(e)}")
+
+    def _build_visualization_prompt(
+        self,
+        dashboard_context: dict[str, Any],
+        data_samples: list[dict[str, Any]],
+        preferences: dict[str, Any] | None = None,
+    ) -> str:
+        """Build the user prompt for visualization generation."""
+        parts = [
+            f"Dashboard Title: {dashboard_context.get('title', 'Dashboard')}",
+            f"Description: {dashboard_context.get('description', 'No description provided')}",
+        ]
+
+        # Add user query if provided
+        if dashboard_context.get("user_query"):
+            parts.append(f"\nUser Request: {dashboard_context['user_query']}")
+
+        # Add schema information for each data source
+        if dashboard_context.get("schemas"):
+            parts.append("\n--- Data Source Schemas ---")
+            for schema in dashboard_context["schemas"]:
+                parts.append(f"\nData Source: {schema.get('name', 'Unknown')}")
+                parts.append(f"Schema:\n{json.dumps(schema.get('schema', {}), indent=2)}")
+
+        # Add sample data
+        if data_samples:
+            parts.append("\n--- Sample Data (first 10 rows per source) ---")
+            for sample in data_samples:
+                parts.append(f"\nData Source: {sample.get('name', 'Unknown')}")
+                rows = sample.get("rows", [])[:10]
+                parts.append(f"Columns: {sample.get('columns', [])}")
+                parts.append(f"Sample Rows ({len(rows)} of {sample.get('total_rows', 0)}):")
+                parts.append(json.dumps(rows, indent=2))
+
+        # Add preferences if provided
+        if preferences:
+            parts.append("\n--- Visualization Preferences ---")
+            if preferences.get("chart_types"):
+                parts.append(f"Preferred chart types: {', '.join(preferences['chart_types'])}")
+            if preferences.get("color_scheme"):
+                parts.append(f"Color scheme: {preferences['color_scheme']}")
+            if preferences.get("layout"):
+                parts.append(f"Layout: {preferences['layout']}")
+
+        parts.append("\nGenerate React visualization code for this dashboard.")
+
+        return "\n".join(parts)
+
+    def _extract_code_from_response(self, content: str) -> str:
+        """Extract code from a response that may contain markdown code blocks."""
+        # Try to find React/JavaScript code blocks
+        for lang in ["jsx", "tsx", "javascript", "typescript", "react"]:
+            marker = f"```{lang}"
+            if marker in content:
+                return content.split(marker)[1].split("```")[0].strip()
+
+        # Fallback to generic code block
+        if "```" in content:
+            parts = content.split("```")
+            if len(parts) >= 2:
+                return parts[1].strip()
+
+        return content

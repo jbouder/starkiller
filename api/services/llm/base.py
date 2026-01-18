@@ -62,3 +62,26 @@ class BaseLLMProvider(ABC):
             True if provider is healthy, False otherwise
         """
         pass
+
+    @abstractmethod
+    async def generate_react_visualization(
+        self,
+        dashboard_context: dict[str, Any],
+        data_samples: list[dict[str, Any]],
+        preferences: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """
+        Generate React visualization code for a dashboard.
+
+        Args:
+            dashboard_context: Dashboard title, description, and schema info
+            data_samples: Sample data from each data source
+            preferences: Optional visualization preferences
+
+        Returns:
+            Dictionary containing:
+                - react_code: Complete exportable React Dashboard component
+                - components: Array of component metadata
+                - reasoning: Design decision explanation
+        """
+        pass
