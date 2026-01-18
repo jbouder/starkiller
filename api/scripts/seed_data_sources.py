@@ -38,7 +38,7 @@ async def seed_data_sources() -> None:
             "description": "Main production database for customer data",
             "source_type": "postgresql",
             "connection_config": {
-                "host": "localhost",
+                "host": "host.docker.internal",
                 "port": 5432,
                 "database": "production_db",
                 "username": "postgres",
@@ -52,7 +52,7 @@ async def seed_data_sources() -> None:
             "description": "PostgreSQL database for analytics and reporting",
             "source_type": "postgresql",
             "connection_config": {
-                "host": "analytics.example.com",
+                "host": "host.docker.internal",
                 "port": 5432,
                 "database": "analytics",
                 "username": "postgres",
@@ -66,8 +66,8 @@ async def seed_data_sources() -> None:
             "description": "Development database for testing queries",
             "source_type": "postgresql",
             "connection_config": {
-                "host": "localhost",
-                "port": 5433,
+                "host": "host.docker.internal",
+                "port": 5432,
                 "database": "dev_db",
                 "username": "postgres",
                 "password": "postgres",
@@ -79,7 +79,7 @@ async def seed_data_sources() -> None:
             "description": "Old PostgreSQL database - deprecated",
             "source_type": "postgresql",
             "connection_config": {
-                "host": "legacy.example.com",
+                "host": "host.docker.internal",
                 "port": 5432,
                 "database": "legacy_db",
                 "username": "postgres",

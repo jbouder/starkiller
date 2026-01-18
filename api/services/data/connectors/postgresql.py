@@ -46,7 +46,14 @@ class PostgreSQLConnector(BaseConnector):
                 database=self.database,
             )
         except Exception as e:
-            raise DataSourceConnectionError(f"Failed to connect: {str(e)}")
+            error_msg = str(e)
+            if self.host in ["localhost", "127.0.0.1"] and "Connection refused" in error_msg:
+                error_msg += (
+                    "\n\nHINT: If you are running Starkiller in Docker, 'localhost' refers to the "
+                    "container itself. To connect to a database on your host machine, try using "
+                    "'host.docker.internal' instead."
+                )
+            raise DataSourceConnectionError(f"Failed to connect: {error_msg}")
 
     async def disconnect(self) -> None:
         """Close PostgreSQL connection."""
