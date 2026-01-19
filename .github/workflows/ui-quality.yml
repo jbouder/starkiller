@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'ui/**'
-      - '.github/workflows/ui-quality.yml'
+      - "ui/**"
+      - ".github/workflows/ui-quality.yml"
   pull_request:
     branches: [main]
     paths:
-      - 'ui/**'
-      - '.github/workflows/ui-quality.yml'
+      - "ui/**"
+      - ".github/workflows/ui-quality.yml"
 
 jobs:
   lint:
@@ -27,9 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: ui/package-lock.json
+          node-version: "20"
 
       - name: Install dependencies
         run: npm ci
@@ -51,9 +49,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: ui/package-lock.json
+          node-version: "20"
 
       - name: Install dependencies
         run: npm ci
