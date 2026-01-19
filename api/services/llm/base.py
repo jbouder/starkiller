@@ -13,7 +13,7 @@ class BaseLLMProvider(ABC):
         natural_language: str,
         schema_info: dict[str, Any],
         context: str | None = None,
-        source_type: str = "csv",
+        source_type: str = "postgresql",
     ) -> dict[str, Any]:
         """
         Generate a data query from natural language.
@@ -22,11 +22,11 @@ class BaseLLMProvider(ABC):
             natural_language: The user's natural language query
             schema_info: Schema information about the data source
             context: Additional context about the data
-            source_type: Type of data source ("postgresql" for SQL, "csv" for pandas)
+            source_type: Type of data source ("postgresql" for SQL)
 
         Returns:
             Dictionary containing:
-                - query: The generated query (SQL, pandas code, etc.)
+                - query: The generated query (SQL)
                 - query_type: Type of query generated
                 - explanation: Explanation of what the query does
         """

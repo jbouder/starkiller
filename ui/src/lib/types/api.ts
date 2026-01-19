@@ -1,10 +1,9 @@
 // TypeScript types mirroring backend schemas
 
 // Data Source Types
-export type SourceType = "csv" | "postgresql";
+export type SourceType = "postgresql";
 
 export interface ConnectionConfig {
-  file_path?: string;
   host?: string;
   port?: number;
   database?: string;
@@ -26,7 +25,6 @@ export interface SchemaTable {
 
 export interface SchemaInfo {
   tables?: SchemaTable[];
-  columns?: SchemaColumn[];
 }
 
 export interface DataSource {

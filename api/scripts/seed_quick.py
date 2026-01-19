@@ -45,15 +45,6 @@ async def seed_quick() -> None:
             },
             "is_active": True,
         },
-        {
-            "name": "Sales Data CSV",
-            "description": "Monthly sales data export",
-            "source_type": "csv",
-            "connection_config": {
-                "file_path": "/data/sales/monthly_sales_2024.csv",
-            },
-            "is_active": True,
-        },
     ]
     
     async with async_session_factory() as session:

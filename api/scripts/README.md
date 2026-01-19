@@ -6,14 +6,14 @@ This directory contains scripts for seeding the database with sample data.
 
 ### 1. `seed_data_sources.py` - Full Seeding Script
 
-Seeds the database with 8 comprehensive sample data sources (4 PostgreSQL + 4 CSV).
+Seeds the database with 4 comprehensive sample PostgreSQL data sources.
 
 **Features:**
 
 - Interactive confirmation prompt before clearing data
 - Detailed progress output with emojis
 - Includes both active and inactive data sources
-- More realistic variety of data sources
+- Realistic variety of data sources
 
 **Usage:**
 
@@ -27,16 +27,12 @@ python scripts/seed_data_sources.py
 - Analytics Database
 - Development PostgreSQL
 - Legacy Database (inactive)
-- Sales Data CSV
-- Customer Demographics CSV
-- Product Inventory CSV
-- Historical Orders CSV (inactive)
 
 ---
 
 ### 2. `seed_quick.py` - Quick Seeding Script
 
-Seeds the database with 3 essential data sources for quick testing.
+Seeds the database with 2 essential data sources for quick testing.
 
 **Features:**
 
@@ -55,7 +51,6 @@ python scripts/seed_quick.py
 
 - Production PostgreSQL
 - Analytics Database
-- Sales Data CSV
 
 ---
 
@@ -75,7 +70,6 @@ curl http://localhost:8000/api/v1/data-sources/{id} | python -m json.tool
 
 - Both scripts will **clear all existing data sources** before seeding
 - Connection credentials in the seed data are examples only
-- CSV file paths are placeholder paths
 - The scripts use async SQLAlchemy sessions directly (not the API)
 - Make sure your database is initialized before running these scripts
 

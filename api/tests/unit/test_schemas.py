@@ -10,12 +10,6 @@ from schemas.visualization import ChartConfig, AxisConfig, SeriesConfig
 class TestDataSourceSchemas:
     """Tests for data source schemas."""
 
-    def test_connection_config_csv(self):
-        """Test CSV connection config."""
-        config = ConnectionConfig(file_path="/path/to/file.csv")
-        assert config.file_path == "/path/to/file.csv"
-        assert config.host is None
-
     def test_connection_config_postgresql(self):
         """Test PostgreSQL connection config."""
         config = ConnectionConfig(
@@ -34,11 +28,17 @@ class TestDataSourceSchemas:
         data = DataSourceCreate(
             name="Test Source",
             description="A test source",
-            source_type="csv",
-            connection_config=ConnectionConfig(file_path="/path/to/file.csv"),
+            source_type="postgresql",
+            connection_config=ConnectionConfig(
+                host="localhost",
+                port=5432,
+                database="testdb",
+                username="user",
+                password="pass",
+            ),
         )
         assert data.name == "Test Source"
-        assert data.source_type == "csv"
+        assert data.source_type == "postgresql"
 
 
 class TestQuerySchemas:

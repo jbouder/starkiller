@@ -10,9 +10,6 @@ from schemas.base import BaseSchema, TimestampSchema
 class ConnectionConfig(BaseSchema):
     """Connection configuration for different data source types."""
 
-    # CSV specific
-    file_path: str | None = None
-
     # PostgreSQL specific
     host: str | None = None
     port: int | None = None
@@ -27,7 +24,7 @@ class DataSourceCreate(BaseSchema):
 
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
-    source_type: Literal["csv", "postgresql"] = Field(...)
+    source_type: Literal["postgresql"] = Field(...)
     connection_config: ConnectionConfig = Field(...)
 
 
@@ -59,7 +56,6 @@ class SchemaInfo(BaseSchema):
     """Schema information for a data source."""
 
     tables: list[SchemaTable] | None = None
-    columns: list[SchemaColumn] | None = None  # For CSV/flat file sources
 
 
 class DataSourceResponse(TimestampSchema):

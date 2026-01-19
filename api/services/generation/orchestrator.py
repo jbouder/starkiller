@@ -276,14 +276,10 @@ class DashboardGenerationOrchestrator:
         Returns:
             Tuple of (query, query_type)
         """
-        if source_type == "postgresql":
-            # Get the first table from schema
-            tables = schema_dict.get("tables", [])
-            if tables:
-                table_name = tables[0].get("name", "")
-                if table_name:
-                    return f'SELECT * FROM "{table_name}" LIMIT 100', "sql"
-            return "SELECT 1", "sql"
-        else:
-            # For pandas-based sources (CSV, etc.)
-            return "df.head(100)", "pandas"
+        # Get the first table from schema
+        tables = schema_dict.get("tables", [])
+        if tables:
+            table_name = tables[0].get("name", "")
+            if table_name:
+                return f'SELECT * FROM "{table_name}" LIMIT 100', "sql"
+        return "SELECT 1", "sql"

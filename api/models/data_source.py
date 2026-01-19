@@ -20,7 +20,7 @@ class DataSource(Base, UUIDMixin, TimestampMixin):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     source_type: Mapped[str] = mapped_column(
         String(50), nullable=False
-    )  # csv, postgresql, etc.
+    )  # postgresql
     connection_config: Mapped[dict] = mapped_column(
         JSON, nullable=False, default=dict
     )  # Connection details (encrypted in production)

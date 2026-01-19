@@ -99,8 +99,14 @@ def sample_data_source_config() -> dict[str, Any]:
     return {
         "name": "Test Data Source",
         "description": "A test data source",
-        "source_type": "csv",
-        "connection_config": {"file_path": "/tmp/test.csv"},
+        "source_type": "postgresql",
+        "connection_config": {
+            "host": "localhost",
+            "port": 5432,
+            "database": "test_db",
+            "username": "test_user",
+            "password": "test_pass",
+        },
     }
 
 

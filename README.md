@@ -56,7 +56,7 @@ Run the following scripts to seed the database with sample data.
 
 #### 1. Seed External Systems (Prerequisite)
 
-Creates "external" databases (`production_db`, `analytics`) and generates sample CSV files.
+Creates "external" databases (`production_db`, `analytics`) with sample data.
 
 ```bash
 # Local (requires local Postgres running)

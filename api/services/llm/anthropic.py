@@ -26,11 +26,10 @@ class AnthropicProvider(BaseLLMProvider):
         natural_language: str,
         schema_info: dict[str, Any],
         context: str | None = None,
-        source_type: str = "csv",
+        source_type: str = "postgresql",
     ) -> dict[str, Any]:
         """Generate a query from natural language using Claude."""
-        if source_type == "postgresql":
-            system_prompt = """You are a data analyst assistant that converts natural language questions into PostgreSQL queries.
+        system_prompt = """You are a data analyst assistant that converts natural language questions into PostgreSQL queries.
 Given a database schema and a natural language question, generate a SQL query that answers the question.
 
 IMPORTANT RULES:
@@ -45,26 +44,8 @@ Respond with a JSON object containing:
 - "query": The SQL query as a string (no markdown, no code blocks, just the SQL)
 - "query_type": Always "sql"
 - "explanation": Brief explanation of what the query does"""
-            query_type_label = "sql"
-            instruction = "Generate the PostgreSQL query to answer this question."
-        else:
-            system_prompt = """You are a data analyst assistant that converts natural language questions into pandas code.
-Given a data schema and a natural language question, generate Python pandas code that answers the question.
-
-IMPORTANT RULES:
-1. Always assume the DataFrame is named 'df'
-2. Return ONLY valid Python code that can be executed
-3. The code should result in a DataFrame or Series that answers the question
-4. Use standard pandas operations (groupby, filter, sort, aggregate, etc.)
-5. Handle missing values appropriately
-6. Include comments explaining key steps
-
-Respond with a JSON object containing:
-- "query": The pandas code as a string
-- "query_type": Always "pandas"
-- "explanation": Brief explanation of what the code does"""
-            query_type_label = "pandas"
-            instruction = "Generate the pandas code to answer this question."
+        query_type_label = "sql"
+        instruction = "Generate the PostgreSQL query to answer this question."
 
         user_message = f"""Schema Information:
 {json.dumps(schema_info, indent=2)}

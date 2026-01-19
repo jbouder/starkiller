@@ -3,7 +3,6 @@
 from typing import Any
 
 from services.data.connectors.base import BaseConnector
-from services.data.connectors.csv import CSVConnector
 from services.data.connectors.postgresql import PostgreSQLConnector
 
 
@@ -12,14 +11,13 @@ def get_connector(source_type: str, connection_config: dict[str, Any]) -> BaseCo
     Get the appropriate connector for a data source type.
 
     Args:
-        source_type: Type of data source (csv, postgresql)
+        source_type: Type of data source (postgresql)
         connection_config: Connection configuration dictionary
 
     Returns:
         Appropriate connector instance
     """
     connectors = {
-        "csv": CSVConnector,
         "postgresql": PostgreSQLConnector,
     }
 
@@ -32,7 +30,6 @@ def get_connector(source_type: str, connection_config: dict[str, Any]) -> BaseCo
 
 __all__ = [
     "BaseConnector",
-    "CSVConnector",
     "PostgreSQLConnector",
     "get_connector",
 ]

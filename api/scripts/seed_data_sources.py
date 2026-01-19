@@ -32,7 +32,6 @@ async def seed_data_sources() -> None:
     """Seed the database with sample data sources."""
     
     sample_data_sources = [
-        # PostgreSQL data sources
         {
             "name": "Production PostgreSQL",
             "description": "Main production database for customer data",
@@ -84,43 +83,6 @@ async def seed_data_sources() -> None:
                 "database": "legacy_db",
                 "username": "postgres",
                 "password": "postgres",
-            },
-            "is_active": False,
-        },
-        # CSV data sources
-        {
-            "name": "Sales Data CSV",
-            "description": "Monthly sales data export",
-            "source_type": "csv",
-            "connection_config": {
-                "file_path": "/app/mock_data/sales/monthly_sales_2024.csv",
-            },
-            "is_active": True,
-        },
-        {
-            "name": "Customer Demographics",
-            "description": "Customer demographic information from marketing",
-            "source_type": "csv",
-            "connection_config": {
-                "file_path": "/app/mock_data/customers/demographics.csv",
-            },
-            "is_active": True,
-        },
-        {
-            "name": "Product Inventory",
-            "description": "Current product inventory snapshot",
-            "source_type": "csv",
-            "connection_config": {
-                "file_path": "/app/mock_data/inventory/products_inventory.csv",
-            },
-            "is_active": True,
-        },
-        {
-            "name": "Historical Orders",
-            "description": "Archive of historical order data",
-            "source_type": "csv",
-            "connection_config": {
-                "file_path": "/app/mock_data/archive/orders_2023.csv",
             },
             "is_active": False,
         },
