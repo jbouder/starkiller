@@ -44,6 +44,36 @@ class GeneratedQuery(BaseSchema):
     row_count: int
 
 
+class DataSourceTiming(BaseSchema):
+    """Timing breakdown for a single data source processing."""
+
+    data_source_id: str
+    data_source_name: str
+    schema_retrieval_ms: int = Field(description="Time to fetch schema from database")
+    llm_query_generation_ms: int = Field(description="Time for LLM to generate SQL query")
+    query_execution_ms: int = Field(description="Time to execute the generated query")
+    data_processing_ms: int = Field(description="Time to process query results")
+    total_ms: int = Field(description="Total time for this data source")
+
+
+class TimingMetrics(BaseSchema):
+    """Detailed timing breakdown for dashboard generation."""
+
+    dashboard_fetch_ms: int = Field(description="Time to fetch dashboard from database")
+    data_source_timings: list[DataSourceTiming] = Field(
+        default_factory=list,
+        description="Per-data-source timing breakdown",
+    )
+    total_data_sources_ms: int = Field(
+        description="Total time spent processing all data sources"
+    )
+    llm_visualization_ms: int = Field(
+        description="Time for LLM to generate React visualization code"
+    )
+    response_assembly_ms: int = Field(description="Time to assemble final response")
+    total_ms: int = Field(description="Total generation time")
+
+
 class GenerateResponse(BaseSchema):
     """Response schema for dashboard generation."""
 
@@ -55,4 +85,8 @@ class GenerateResponse(BaseSchema):
     queries_generated: list[GeneratedQuery]
     sample_data: dict[str, Any]
     execution_time_ms: int
+    timing_metrics: TimingMetrics | None = Field(
+        default=None,
+        description="Detailed timing breakdown for performance analysis",
+    )
     metadata: dict[str, Any] = Field(default_factory=dict)

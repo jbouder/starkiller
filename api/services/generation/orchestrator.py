@@ -15,10 +15,12 @@ from core.exceptions import (
 from core.logging import get_logger
 from models.dashboard import Dashboard
 from schemas.generation import (
+    DataSourceTiming,
     GeneratedComponent,
     GeneratedQuery,
     GenerateRequest,
     GenerateResponse,
+    TimingMetrics,
 )
 from services.data.connectors import get_connector
 from services.data.processor import DataProcessor
@@ -61,7 +63,9 @@ class DashboardGenerationOrchestrator:
         start_time = time.time()
 
         # Fetch dashboard with data sources
+        t0 = time.time()
         dashboard = await self._get_dashboard(dashboard_id)
+        dashboard_fetch_ms = int((time.time() - t0) * 1000)
 
         if not dashboard.data_sources:
             raise GenerationNoDataSourcesError(
@@ -74,17 +78,21 @@ class DashboardGenerationOrchestrator:
         data_samples: list[dict[str, Any]] = []
         queries_generated: list[GeneratedQuery] = []
         data_sources_used: list[str] = []
+        data_source_timings: list[DataSourceTiming] = []
 
+        t0 = time.time()
         for data_source in dashboard.data_sources:
             if not data_source.is_active:
                 continue
 
             try:
-                schema_info, sample_data, query_info = await self._process_data_source(
+                schema_info, sample_data, query_info, ds_timing = await self._process_data_source(
                     data_source=data_source,
                     dashboard_description=dashboard.description or dashboard.title,
                     user_query=request.query if request else None,
                 )
+
+                data_source_timings.append(ds_timing)
 
                 schemas.append({
                     "name": data_source.name,
@@ -121,6 +129,8 @@ class DashboardGenerationOrchestrator:
                     details={"data_source_id": data_source.id, "error": str(e)},
                 )
 
+        total_data_sources_ms = int((time.time() - t0) * 1000)
+
         if not data_sources_used:
             raise GenerationNoDataSourcesError(
                 "No active data sources available for generation",
@@ -141,6 +151,7 @@ class DashboardGenerationOrchestrator:
             preferences = request.visualization_preferences.model_dump(exclude_none=True)
 
         # Generate React visualization code
+        t0 = time.time()
         try:
             llm_response = await self.llm.generate_react_visualization(
                 dashboard_context=dashboard_context,
@@ -153,6 +164,10 @@ class DashboardGenerationOrchestrator:
                 "Failed to generate React visualization code",
                 details={"error": str(e)},
             )
+        llm_visualization_ms = int((time.time() - t0) * 1000)
+
+        # Build response (track assembly time)
+        t0 = time.time()
 
         # Build sample data dict for response
         sample_data_dict = {
@@ -171,7 +186,40 @@ class DashboardGenerationOrchestrator:
             for comp in llm_response.get("components", [])
         ]
 
+        response_assembly_ms = int((time.time() - t0) * 1000)
         execution_time_ms = int((time.time() - start_time) * 1000)
+
+        # Build timing metrics
+        timing_metrics = TimingMetrics(
+            dashboard_fetch_ms=dashboard_fetch_ms,
+            data_source_timings=data_source_timings,
+            total_data_sources_ms=total_data_sources_ms,
+            llm_visualization_ms=llm_visualization_ms,
+            response_assembly_ms=response_assembly_ms,
+            total_ms=execution_time_ms,
+        )
+
+        # Log timing breakdown
+        logger.info(
+            "Dashboard generation timing breakdown",
+            dashboard_id=dashboard_id,
+            dashboard_fetch_ms=dashboard_fetch_ms,
+            total_data_sources_ms=total_data_sources_ms,
+            llm_visualization_ms=llm_visualization_ms,
+            response_assembly_ms=response_assembly_ms,
+            total_ms=execution_time_ms,
+        )
+        for ds_timing in data_source_timings:
+            logger.info(
+                "Data source timing",
+                data_source_id=ds_timing.data_source_id,
+                data_source_name=ds_timing.data_source_name,
+                schema_retrieval_ms=ds_timing.schema_retrieval_ms,
+                llm_query_generation_ms=ds_timing.llm_query_generation_ms,
+                query_execution_ms=ds_timing.query_execution_ms,
+                data_processing_ms=ds_timing.data_processing_ms,
+                total_ms=ds_timing.total_ms,
+            )
 
         return GenerateResponse(
             dashboard_id=dashboard_id,
@@ -182,6 +230,7 @@ class DashboardGenerationOrchestrator:
             queries_generated=queries_generated,
             sample_data=sample_data_dict,
             execution_time_ms=execution_time_ms,
+            timing_metrics=timing_metrics,
             metadata={
                 "model": llm_response.get("model", "unknown"),
                 "reasoning": llm_response.get("reasoning", ""),
@@ -209,13 +258,19 @@ class DashboardGenerationOrchestrator:
         data_source: Any,
         dashboard_description: str,
         user_query: str | None = None,
-    ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], DataSourceTiming]:
         """
         Process a single data source to get schema, sample data, and query.
 
         Returns:
-            Tuple of (schema_info, sample_data, query_info)
+            Tuple of (schema_info, sample_data, query_info, timing)
         """
+        ds_start = time.time()
+        schema_ms = 0
+        llm_query_ms = 0
+        query_exec_ms = 0
+        data_proc_ms = 0
+
         connector = get_connector(
             source_type=data_source.source_type,
             connection_config=data_source.connection_config,
@@ -223,10 +278,13 @@ class DashboardGenerationOrchestrator:
 
         async with connector:
             # Get schema
+            t0 = time.time()
             schema_info = await connector.get_schema()
             schema_dict = schema_info.model_dump()
+            schema_ms = int((time.time() - t0) * 1000)
 
             # Generate a query for this data source
+            t0 = time.time()
             query_prompt = user_query or f"Get representative data for: {dashboard_description}"
             query_info = await self.llm.generate_query(
                 natural_language=query_prompt,
@@ -234,11 +292,17 @@ class DashboardGenerationOrchestrator:
                 context=f"Dashboard: {dashboard_description}",
                 source_type=data_source.source_type,
             )
+            llm_query_ms = int((time.time() - t0) * 1000)
 
             # Execute the query to get sample data
             try:
+                t0 = time.time()
                 result_df = await connector.execute_query(query_info.get("query", ""))
+                query_exec_ms = int((time.time() - t0) * 1000)
+
+                t0 = time.time()
                 sample_data = self.processor.dataframe_to_dict(result_df)
+                data_proc_ms = int((time.time() - t0) * 1000)
             except Exception as e:
                 logger.warning(
                     "Query execution failed, falling back to simple query",
@@ -250,8 +314,14 @@ class DashboardGenerationOrchestrator:
                     data_source.source_type, schema_dict
                 )
                 try:
+                    t0 = time.time()
                     result_df = await connector.execute_query(fallback_query)
+                    query_exec_ms = int((time.time() - t0) * 1000)
+
+                    t0 = time.time()
                     sample_data = self.processor.dataframe_to_dict(result_df)
+                    data_proc_ms = int((time.time() - t0) * 1000)
+
                     query_info = {
                         "query": fallback_query,
                         "query_type": fallback_type,
@@ -265,7 +335,19 @@ class DashboardGenerationOrchestrator:
                     )
                     raise
 
-            return schema_dict, sample_data, query_info
+            ds_total_ms = int((time.time() - ds_start) * 1000)
+
+            timing = DataSourceTiming(
+                data_source_id=data_source.id,
+                data_source_name=data_source.name,
+                schema_retrieval_ms=schema_ms,
+                llm_query_generation_ms=llm_query_ms,
+                query_execution_ms=query_exec_ms,
+                data_processing_ms=data_proc_ms,
+                total_ms=ds_total_ms,
+            )
+
+            return schema_dict, sample_data, query_info, timing
 
     def _get_fallback_query(
         self, source_type: str, schema_dict: dict[str, Any]
