@@ -16,13 +16,13 @@ Starkiller reimagines traditional BI dashboarding by using AI to dynamically cre
 
 ## Tech Stack
 
-| Frontend              | Backend              |
-| --------------------- | -------------------- |
-| React 19 + TypeScript | Python FastAPI       |
-| Vite                  | SQLAlchemy (async)   |
-| Tailwind CSS          | Anthropic Claude     |
-| shadcn/ui             | Pandas/NumPy         |
-| Recharts              | Alembic + PostgreSQL |
+| Frontend              | Backend                   |
+| --------------------- | ------------------------- |
+| React 19 + TypeScript | Python FastAPI            |
+| Vite                  | SQLAlchemy (async)        |
+| Tailwind CSS          | Anthropic Claude & Gemini |
+| shadcn/ui             | Pandas/NumPy              |
+| Recharts              | Alembic + PostgreSQL      |
 
 ## Quick Start (Docker Compose)
 
@@ -31,7 +31,7 @@ The easiest way to run Starkiller is with Docker Compose, which starts the UI, A
 ### Prerequisites
 
 - Docker and Docker Compose
-- An [Anthropic API key](https://console.anthropic.com/)
+- An [Anthropic API key](https://console.anthropic.com/) or [Google Gemini API key](https://aistudio.google.com/app/apikey)
 
 ### 1. Clone and Configure
 
@@ -43,10 +43,17 @@ cd starkiller
 cp api/.env.example api/.env
 ```
 
-Edit `api/.env` and add your Anthropic API key:
+Edit `api/.env` and configure your preferred LLM provider:
 
-```
+```ini
+# Supported providers: anthropic, gemini
+LLM_PROVIDER=anthropic
+
+# If using Anthropic
 ANTHROPIC_API_KEY=sk-ant-your-key-here
+
+# If using Gemini
+GEMINI_API_KEY=your-gemini-key-here
 ```
 
 ### 2. Start the Stack
@@ -93,7 +100,7 @@ For development without Docker, you'll need to run the frontend and backend sepa
 - Node.js 18+ and npm 9+
 - Python 3.11+
 - PostgreSQL 15+
-- An [Anthropic API key](https://console.anthropic.com/)
+- An [Anthropic API key](https://console.anthropic.com/) or [Google Gemini API key](https://aistudio.google.com/app/apikey)
 
 ### Backend Setup
 
@@ -109,7 +116,10 @@ pip install -e ".[dev]"
 
 # Configure environment
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# Edit .env and configure your LLM provider
+# Example for Gemini:
+# LLM_PROVIDER=gemini
+# GEMINI_API_KEY=your-key-here
 
 # Run migrations
 alembic upgrade head
@@ -196,16 +206,19 @@ npm run lint
 
 ### API (`api/.env`)
 
-| Variable            | Description                      | Default                                                            |
-| ------------------- | -------------------------------- | ------------------------------------------------------------------ |
-| `ANTHROPIC_API_KEY` | Anthropic API key                | (required)                                                         |
-| `ANTHROPIC_MODEL`   | Claude model to use              | `claude-sonnet-4-5-20250929`                                       |
-| `DATABASE_URL`      | Database connection string       | `postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller` |
-| `ENVIRONMENT`       | development, staging, production | `development`                                                      |
-| `DEBUG`             | Enable debug mode                | `true`                                                             |
-| `HOST`              | API host                         | `0.0.0.0`                                                          |
-| `PORT`              | API port                         | `8000`                                                             |
-| `CORS_ORIGINS`      | Allowed CORS origins             | `http://localhost:5173`                                            |
+| Variable            | Description                          | Default                                                            |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------------ |
+| `LLM_PROVIDER`      | LLM provider (`anthropic`, `gemini`) | `anthropic`                                                        |
+| `ANTHROPIC_API_KEY` | Anthropic API key                    | (required if using `anthropic`)                                    |
+| `ANTHROPIC_MODEL`   | Claude model to use                  | `claude-sonnet-4-5-20250929`                                       |
+| `GEMINI_API_KEY`    | Google Gemini API key                | (required if using `gemini`)                                       |
+| `GEMINI_MODEL`      | Gemini model to use                  | `gemini-2.0-flash`                                                 |
+| `DATABASE_URL`      | Database connection string           | `postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller` |
+| `ENVIRONMENT`       | development, staging, production     | `development`                                                      |
+| `DEBUG`             | Enable debug mode                    | `true`                                                             |
+| `HOST`              | API host                             | `0.0.0.0`                                                          |
+| `PORT`              | API port                             | `8000`                                                             |
+| `CORS_ORIGINS`      | Allowed CORS origins                 | `["http://localhost:5173"]`                                        |
 
 ---
 
