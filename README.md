@@ -16,131 +16,111 @@ Starkiller reimagines traditional BI dashboarding by using AI to dynamically cre
 
 ## Tech Stack
 
-### Frontend
+| Frontend | Backend |
+|----------|---------|
+| React 19 + TypeScript | Python FastAPI |
+| Vite | SQLAlchemy (async) |
+| Tailwind CSS | Anthropic Claude |
+| shadcn/ui | Pandas/NumPy |
+| Recharts | Alembic + PostgreSQL |
 
-- **React 19** with TypeScript
-- **Vite** for fast development and building
-- **Tailwind CSS** for styling (dark mode default)
-- **shadcn/ui** for accessible UI components
-- **Recharts** for data visualization
+## Quick Start (Docker Compose)
 
-### Backend
-
-- **Python FastAPI**: High-performance async API framework
-- **SQLAlchemy**: Async ORM with SQLite/PostgreSQL support
-- **Anthropic Claude**: Primary LLM provider for query generation
-- **Pandas/NumPy**: Data processing and manipulation
-- **Alembic**: Database migrations
-- **Pydantic**: Request/response validation
-
-## Database Setup
-
-The application uses PostgreSQL (v15+).
-
-### Migrations
-
-Initialize the database schema using Alembic:
-
-```bash
-# Local
-cd api
-alembic upgrade head
-
-# Docker
-docker compose run --rm api alembic upgrade head
-```
-
-### Seeding Data
-
-Run the following scripts to seed the database with sample data.
-
-#### 1. Seed External Systems (Prerequisite)
-
-Creates "external" databases (`production_db`, `analytics`) with sample data.
-
-```bash
-# Local (requires local Postgres running)
-export ADMIN_DB_URL=postgresql://postgres:postgres@localhost:5432/postgres
-python scripts/seed_connection_data.py
-```
-
-#### 2. Seed Application Data
-
-Populates the `starkiller` database with sample Data Sources pointing to the external systems.
-
-```bash
-# Local
-python scripts/seed_data_sources.py
-```
-
-## Getting Started
+The easiest way to run Starkiller is with Docker Compose, which starts the UI, API, and PostgreSQL database together.
 
 ### Prerequisites
 
-- Node.js 18+
-- npm 9+
-- Python 3.11+
-- An Anthropic API key
+- Docker and Docker Compose
+- An [Anthropic API key](https://console.anthropic.com/)
 
-### Installation
+### 1. Clone and Configure
 
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/starkiller.git
 cd starkiller
+
+# Configure the API environment
+cp api/.env.example api/.env
 ```
 
-### Running with Docker
+Edit `api/.env` and add your Anthropic API key:
 
-You can run the entire stack (API, UI, Database) using Docker Compose:
+```
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+
+### 2. Start the Stack
 
 ```bash
 docker compose up --build
 ```
 
-- **UI**: http://localhost:3000 (proxies API requests to backend)
-- **API**: http://localhost:8000
-- **Database**: Port 5432
+### 3. Initialize the Database
+
+In a new terminal, run migrations and seed sample data:
+
+```bash
+# Run database migrations
+docker compose exec api alembic upgrade head
+
+# Seed external sample databases
+docker compose exec api python scripts/seed_connection_data.py
+
+# Seed application data sources
+docker compose exec api python scripts/seed_data_sources.py
+
+# Seed sample dashboards
+docker compose exec api python scripts/seed_dashboards.py
+```
+
+### 4. Access the Application
+
+| Service | URL |
+|---------|-----|
+| UI | http://localhost:3000 |
+| API | http://localhost:8000 |
+| API Docs (Swagger) | http://localhost:8000/docs |
+| API Docs (ReDoc) | http://localhost:8000/redoc |
+
+---
+
+## Local Development (Without Docker)
+
+For development without Docker, you'll need to run the frontend and backend separately.
+
+### Prerequisites
+
+- Node.js 18+ and npm 9+
+- Python 3.11+
+- PostgreSQL 15+
+- An [Anthropic API key](https://console.anthropic.com/)
 
 ### Backend Setup
 
 ```bash
-# Navigate to the API directory
 cd api
 
 # Create and activate virtual environment
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -e ".[dev]"
 
-# Copy environment template and configure
+# Configure environment
 cp .env.example .env
-```
+# Edit .env and add your ANTHROPIC_API_KEY
 
-Edit `.env` and add your Anthropic API key:
+# Run migrations
+alembic upgrade head
 
-```bash
-ANTHROPIC_API_KEY=sk-ant-your-key-here
-```
-
-Start the API server:
-
-```bash
+# Start the API server
 uvicorn main:app --reload
 ```
-
-The API will be available at:
-
-- API: http://localhost:8000
-- Swagger Docs: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
 
 ### Frontend Setup
 
 ```bash
-# From the project root, navigate to UI
 cd ui
 
 # Install dependencies
@@ -150,87 +130,101 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at http://localhost:5173
+### Seed Sample Data (Local)
 
-### Running Both Services
-
-For full functionality, run both the API and frontend in separate terminals:
-
-**Terminal 1 (API):**
+With PostgreSQL running locally:
 
 ```bash
 cd api
 source .venv/bin/activate
-uvicorn main:app --reload
+
+# Set admin connection for creating external databases
+export ADMIN_DB_URL=postgresql://postgres:postgres@localhost:5432/postgres
+
+# Seed in order
+python scripts/seed_connection_data.py  # External sample databases
+python scripts/seed_data_sources.py     # Application data sources
+python scripts/seed_dashboards.py       # Sample dashboards
 ```
 
-**Terminal 2 (Frontend):**
+### Local URLs
 
-```bash
-cd ui
-npm run dev
-```
+| Service | URL |
+|---------|-----|
+| UI | http://localhost:5173 |
+| API | http://localhost:8000 |
 
-### Build
+---
 
-```bash
-# Build frontend for production
-cd ui
-npm run build
-
-# Preview production build
-npm run preview
-```
+## Common Commands
 
 ### Running Tests
 
 ```bash
-# API tests
 cd api
-pytest
+pytest                           # Run all tests
+pytest --cov=. --cov-report=html # With coverage report
+pytest tests/unit/               # Unit tests only
+pytest -k "test_name"            # Run specific test
+```
 
-# With coverage
-pytest --cov=. --cov-report=html
+### Building for Production
+
+```bash
+cd ui
+npm run build    # Build frontend
+npm run preview  # Preview production build
 ```
 
 ### Adding UI Components
-
-shadcn/ui components can be added as needed:
 
 ```bash
 cd ui
 npx shadcn@latest add <component-name>
 ```
 
+### Linting
+
+```bash
+cd ui
+npm run lint
+```
+
+---
+
 ## API Endpoints
 
-| Method | Endpoint                         | Description                    |
-| ------ | -------------------------------- | ------------------------------ |
-| GET    | `/api/v1/health`                 | Health check                   |
-| GET    | `/api/v1/health/ready`           | Readiness check (DB, LLM)      |
-| POST   | `/api/v1/query`                  | Process natural language query |
-| GET    | `/api/v1/query/history`          | Get query history              |
-| POST   | `/api/v1/data-sources`           | Create data source             |
-| GET    | `/api/v1/data-sources`           | List data sources              |
-| GET    | `/api/v1/data-sources/{id}`      | Get data source                |
-| PATCH  | `/api/v1/data-sources/{id}`      | Update data source             |
-| DELETE | `/api/v1/data-sources/{id}`      | Delete data source             |
-| POST   | `/api/v1/data-sources/{id}/test` | Test connection                |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/health` | Health check |
+| GET | `/api/v1/health/ready` | Readiness check (DB, LLM) |
+| POST | `/api/v1/query` | Process natural language query |
+| GET | `/api/v1/query/history` | Get query history |
+| POST | `/api/v1/data-sources` | Create data source |
+| GET | `/api/v1/data-sources` | List data sources |
+| GET | `/api/v1/data-sources/{id}` | Get data source |
+| PATCH | `/api/v1/data-sources/{id}` | Update data source |
+| DELETE | `/api/v1/data-sources/{id}` | Delete data source |
+| POST | `/api/v1/data-sources/{id}/test` | Test connection |
+
+---
 
 ## Environment Variables
 
-### API (.env)
+### API (`api/.env`)
 
-| Variable            | Description                      | Default                                                          |
-| ------------------- | -------------------------------- | ---------------------------------------------------------------- |
-| `ENVIRONMENT`       | development, staging, production | development                                                      |
-| `DEBUG`             | Enable debug mode                | true                                                             |
-| `HOST`              | API host                         | 0.0.0.0                                                          |
-| `PORT`              | API port                         | 8000                                                             |
-| `CORS_ORIGINS`      | Allowed CORS origins             | http://localhost:5173                                            |
-| `DATABASE_URL`      | Database connection string       | postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller |
-| `ANTHROPIC_API_KEY` | Anthropic API key                | (required)                                                       |
-| `ANTHROPIC_MODEL`   | Claude model to use              | claude-sonnet-4-5-20250929                                       |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ANTHROPIC_API_KEY` | Anthropic API key | (required) |
+| `ANTHROPIC_MODEL` | Claude model to use | `claude-sonnet-4-5-20250929` |
+| `DATABASE_URL` | Database connection string | `postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller` |
+| `ENVIRONMENT` | development, staging, production | `development` |
+| `DEBUG` | Enable debug mode | `true` |
+| `HOST` | API host | `0.0.0.0` |
+| `PORT` | API port | `8000` |
+| `CORS_ORIGINS` | Allowed CORS origins | `http://localhost:5173` |
+
+---
 
 ## License
 

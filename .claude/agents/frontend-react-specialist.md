@@ -65,10 +65,11 @@ You architect applications as composable component trees:
 ## Code Quality Standards
 
 1. **Naming Conventions**:
-   - Components: PascalCase
-   - Hooks: camelCase starting with 'use'
+   - Files/Folders: kebab-case for all (e.g., `some-component.tsx`, `some-hook.ts`)
+   - Components: PascalCase exports (e.g., `some-component.tsx` exports `SomeComponent`)
+   - Hooks: camelCase starting with 'use' (e.g., `some-hook.ts` exports `useSomeHook`)
    - Types/Interfaces: PascalCase, props interfaces suffixed with 'Props'
-   - Files: Component files match component name, utilities in kebab-case
+   - Exception: `App.tsx` keeps PascalCase filename
 
 2. **Component Structure**:
    ```typescript
