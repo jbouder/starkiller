@@ -45,20 +45,19 @@ async def seed_dashboards() -> None:
 
         sample_dashboards = [
             {
-                "title": "Sales Performance",
-                "description": "Overview of sales metrics and customer demographics",
-                "data_sources": [ds for ds in data_sources if "Sales" in ds.name or "Demographics" in ds.name],
-            },
-            {
                 "title": "Inventory & Operations",
-                "description": "Real-time look at product inventory and archive data",
+                "description": "Real-time look at product inventory and archive data. This dashboard should provide high level metrics at the top, and graphs below. It should include a bar chart of inventory levels, a line chart of sales over time, and a table of recent orders.",
                 "data_sources": [ds for ds in data_sources if "Inventory" in ds.name or "Database" in ds.name],
             },
             {
                 "title": "Executive Overview",
-                "description": "High-level summary for stakeholders",
-                "data_sources": data_sources[:3], # Just take first 3
-            }
+                "data_sources": [data_sources[0]],
+            },
+            {
+                "title": "Sales Performance",
+                "description": "Overview of sales metrics and customer demographics. This dashboard should provide high level metrics at the top, and graphs below. It should include a bar chart of inventory levels, a line chart of sales over time, and a table of recent orders.",
+                "data_sources": [ds for ds in data_sources if "Sales" in ds.name or "Demographics" in ds.name],
+            },
         ]
         
         created_count = 0

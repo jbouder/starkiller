@@ -39,8 +39,8 @@ ANALYTICS_DB_CONFIG = {
 }
 
 # Administrative connection to create DBs/Users
-# Default to trying 'postgres' user locally, or leave empty to use current system user
-ADMIN_DB_URL = os.getenv("ADMIN_DB_URL", "postgresql://localhost:5432/postgres")
+DB_HOST = os.getenv("DB_HOST", "db")
+ADMIN_DB_URL = os.getenv("ADMIN_DB_URL", f"postgresql://postgres:postgres@{DB_HOST}:5432/postgres")
 
 
 async def create_database_and_user(conn, config):
@@ -66,7 +66,7 @@ async def create_database_and_user(conn, config):
 
 async def seed_production_db():
     """Seed the production PostgreSQL database."""
-    dsn = f"postgresql://{PROD_DB_CONFIG['user']}:{PROD_DB_CONFIG['password']}@localhost:5432/{PROD_DB_CONFIG['database']}"
+    dsn = f"postgresql://{PROD_DB_CONFIG['user']}:{PROD_DB_CONFIG['password']}@{DB_HOST}:5432/{PROD_DB_CONFIG['database']}"
     print(f"Seeding Production DB ({dsn})...")
 
     try:
@@ -179,7 +179,7 @@ async def seed_production_db():
 
 async def seed_analytics_db():
     """Seed the analytics PostgreSQL database."""
-    dsn = f"postgresql://{ANALYTICS_DB_CONFIG['user']}:{ANALYTICS_DB_CONFIG['password']}@localhost:5432/{ANALYTICS_DB_CONFIG['database']}"
+    dsn = f"postgresql://{ANALYTICS_DB_CONFIG['user']}:{ANALYTICS_DB_CONFIG['password']}@{DB_HOST}:5432/{ANALYTICS_DB_CONFIG['database']}"
     print(f"Seeding Analytics DB ({dsn})...")
 
     try:

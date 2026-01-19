@@ -28,10 +28,17 @@ async def verify_dashboards():
                 print(f"✅ Successfully fetched dashboard: {response.json()['title']}")
                 
                 # Test PATCH dashboard
-                print(f"\n🔍 Updating dashboard {d_id}...")
-                response = await client.patch(f"{url}/{d_id}", json={"title": "Updated Title"})
+                original_title = response.json()['title']
+                print(f"\n🔍 Updating dashboard {d_id} to test PATCH...")
+                response = await client.patch(f"{url}/{d_id}", json={"title": "Temporary Test Title"})
                 response.raise_for_status()
                 print(f"✅ Successfully updated title to: {response.json()['title']}")
+
+                # Restore original title
+                print(f"🔍 Restoring original title: {original_title}...")
+                response = await client.patch(f"{url}/{d_id}", json={"title": original_title})
+                response.raise_for_status()
+                print(f"✅ Title restored.")
             
             return True
         except Exception as e:
