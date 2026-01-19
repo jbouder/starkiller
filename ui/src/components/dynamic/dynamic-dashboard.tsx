@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { GenerateResponse } from "@/lib/types/dashboard";
-import { prepareCodeForExecution, createScope } from "./DynamicDashboardScope";
+import { prepareCodeForExecution, createScope } from "./dynamic-dashboard-scope";
 
 interface DynamicDashboardProps {
   generatedDashboard: GenerateResponse | null;

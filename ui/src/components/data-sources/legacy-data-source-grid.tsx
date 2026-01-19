@@ -1,7 +1,7 @@
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LegacyDataSourceCard } from "./LegacyDataSourceCard";
+import { LegacyDataSourceCard } from "./legacy-data-source-card";
 import type { DataSource } from "@/lib/types/api";
 
 interface DataSourceGridProps {

@@ -2,9 +2,9 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DynamicChart } from "./DynamicChart";
-import { DataTable } from "./DataTable";
-import { ResultHeader } from "@/components/query/ResultHeader";
+import { DynamicChart } from "./dynamic-chart";
+import { DataTable } from "./data-table";
+import { ResultHeader } from "@/components/query/result-header";
 import type { QueryResponse, ChartConfig } from "@/lib/types/api";
 
 interface VisualizationViewProps {

@@ -1,7 +1,7 @@
-import { DashboardGrid } from "@/components/dashboards/DashboardGrid";
-import { DynamicDashboard } from "@/components/dynamic/DynamicDashboard";
-import { useDashboards } from "@/hooks/useDashboards";
-import { useDashboardGeneration } from "@/hooks/useDashboardGeneration";
+import { DashboardGrid } from "@/components/dashboards/dashboard-grid";
+import { DynamicDashboard } from "@/components/dynamic/dynamic-dashboard";
+import { useDashboards } from "@/hooks/use-dashboards";
+import { useDashboardGeneration } from "@/hooks/use-dashboard-generation";
 import type { Dashboard } from "@/lib/types/dashboard";
 
 export function MainContent() {

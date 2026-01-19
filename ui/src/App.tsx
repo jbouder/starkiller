@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@/components/theme-provider";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { Header } from "@/components/layout/Header";
-import { MainContent } from "@/components/layout/MainContent";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { Header } from "@/components/layout/header";
+import { MainContent } from "@/components/layout/main-content";
 
 function App() {
   return (
