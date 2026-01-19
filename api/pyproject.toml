@@ -17,8 +17,9 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
     "asyncpg>=0.30.0",
 
-    # LLM Provider (Anthropic as primary)
+    # LLM Providers
     "anthropic>=0.76.0",
+    "google-generativeai>=0.8.0",
 
     # Data Processing
     "pandas>=2.0.3",

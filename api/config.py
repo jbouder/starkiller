@@ -30,9 +30,11 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller"
 
     # LLM Configuration
-    llm_provider: Literal["anthropic"] = "anthropic"
+    llm_provider: Literal["anthropic", "gemini"] = "anthropic"
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-sonnet-4-5-20250929"
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
 
     @property
     def is_development(self) -> bool:
