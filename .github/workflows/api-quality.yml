@@ -12,6 +12,9 @@ on:
       - 'api/**'
       - '.github/workflows/api-quality.yml'
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint & Format
