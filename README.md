@@ -16,13 +16,13 @@ Starkiller reimagines traditional BI dashboarding by using AI to dynamically cre
 
 ## Tech Stack
 
-| Frontend | Backend |
-|----------|---------|
-| React 19 + TypeScript | Python FastAPI |
-| Vite | SQLAlchemy (async) |
-| Tailwind CSS | Anthropic Claude |
-| shadcn/ui | Pandas/NumPy |
-| Recharts | Alembic + PostgreSQL |
+| Frontend              | Backend              |
+| --------------------- | -------------------- |
+| React 19 + TypeScript | Python FastAPI       |
+| Vite                  | SQLAlchemy (async)   |
+| Tailwind CSS          | Anthropic Claude     |
+| shadcn/ui             | Pandas/NumPy         |
+| Recharts              | Alembic + PostgreSQL |
 
 ## Quick Start (Docker Compose)
 
@@ -75,12 +75,12 @@ docker compose exec api python scripts/seed_dashboards.py
 
 ### 4. Access the Application
 
-| Service | URL |
-|---------|-----|
-| UI | http://localhost:3000 |
-| API | http://localhost:8000 |
-| API Docs (Swagger) | http://localhost:8000/docs |
-| API Docs (ReDoc) | http://localhost:8000/redoc |
+| Service            | URL                         |
+| ------------------ | --------------------------- |
+| UI                 | http://localhost:3000       |
+| API                | http://localhost:8000       |
+| API Docs (Swagger) | http://localhost:8000/docs  |
+| API Docs (ReDoc)   | http://localhost:8000/redoc |
 
 ---
 
@@ -149,10 +149,10 @@ python scripts/seed_dashboards.py       # Sample dashboards
 
 ### Local URLs
 
-| Service | URL |
-|---------|-----|
-| UI | http://localhost:5173 |
-| API | http://localhost:8000 |
+| Service | URL                   |
+| ------- | --------------------- |
+| UI      | http://localhost:5173 |
+| API     | http://localhost:8000 |
 
 ---
 
@@ -192,37 +192,20 @@ npm run lint
 
 ---
 
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/health` | Health check |
-| GET | `/api/v1/health/ready` | Readiness check (DB, LLM) |
-| POST | `/api/v1/query` | Process natural language query |
-| GET | `/api/v1/query/history` | Get query history |
-| POST | `/api/v1/data-sources` | Create data source |
-| GET | `/api/v1/data-sources` | List data sources |
-| GET | `/api/v1/data-sources/{id}` | Get data source |
-| PATCH | `/api/v1/data-sources/{id}` | Update data source |
-| DELETE | `/api/v1/data-sources/{id}` | Delete data source |
-| POST | `/api/v1/data-sources/{id}/test` | Test connection |
-
----
-
 ## Environment Variables
 
 ### API (`api/.env`)
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `ANTHROPIC_API_KEY` | Anthropic API key | (required) |
-| `ANTHROPIC_MODEL` | Claude model to use | `claude-sonnet-4-5-20250929` |
-| `DATABASE_URL` | Database connection string | `postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller` |
-| `ENVIRONMENT` | development, staging, production | `development` |
-| `DEBUG` | Enable debug mode | `true` |
-| `HOST` | API host | `0.0.0.0` |
-| `PORT` | API port | `8000` |
-| `CORS_ORIGINS` | Allowed CORS origins | `http://localhost:5173` |
+| Variable            | Description                      | Default                                                            |
+| ------------------- | -------------------------------- | ------------------------------------------------------------------ |
+| `ANTHROPIC_API_KEY` | Anthropic API key                | (required)                                                         |
+| `ANTHROPIC_MODEL`   | Claude model to use              | `claude-sonnet-4-5-20250929`                                       |
+| `DATABASE_URL`      | Database connection string       | `postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller` |
+| `ENVIRONMENT`       | development, staging, production | `development`                                                      |
+| `DEBUG`             | Enable debug mode                | `true`                                                             |
+| `HOST`              | API host                         | `0.0.0.0`                                                          |
+| `PORT`              | API port                         | `8000`                                                             |
+| `CORS_ORIGINS`      | Allowed CORS origins             | `http://localhost:5173`                                            |
 
 ---
 
