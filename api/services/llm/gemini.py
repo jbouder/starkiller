@@ -3,12 +3,11 @@
 import json
 from typing import Any
 
-import google.generativeai as genai
-from google.generativeai.types import GenerationConfig
-
 from config import get_settings
 from core.exceptions import LLMConnectionError, LLMResponseError
 from core.logging import get_logger
+from google import genai
+from google.genai import types
 from services.llm.base import BaseLLMProvider
 
 logger = get_logger(__name__)
@@ -19,9 +18,8 @@ class GeminiProvider(BaseLLMProvider):
 
     def __init__(self) -> None:
         settings = get_settings()
-        genai.configure(api_key=settings.gemini_api_key)
+        self.client = genai.Client(api_key=settings.gemini_api_key)
         self.model_name = settings.gemini_model
-        self.model = genai.GenerativeModel(self.model_name)
 
     async def generate_query(
         self,
@@ -52,20 +50,18 @@ Respond with a JSON object containing:
         user_message = f"""Schema Information:
 {json.dumps(schema_info, indent=2)}
 
-{f'Additional Context: {context}' if context else ''}
+{f"Additional Context: {context}" if context else ""}
 
 Natural Language Question: {natural_language}
 
 {instruction}"""
 
         try:
-            model = genai.GenerativeModel(
-                self.model_name,
-                system_instruction=system_instruction,
-            )
-            response = await model.generate_content_async(
-                user_message,
-                generation_config=GenerationConfig(
+            response = await self.client.aio.models.generate_content(
+                model=self.model_name,
+                contents=user_message,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
                     max_output_tokens=2048,
                     response_mime_type="application/json",
                 ),
@@ -84,19 +80,29 @@ Natural Language Question: {natural_language}
                     json_str = content.strip()
 
                 result = json.loads(json_str)
+
+                # Handle case where LLM returns an array instead of an object
+                if isinstance(result, list) and len(result) > 0:
+                    result = result[0]
+
+                if not isinstance(result, dict):
+                    raise ValueError(f"Expected dict, got {type(result).__name__}")
+
                 return {
                     "query": result.get("query", ""),
                     "query_type": result.get("query_type", query_type_label),
                     "explanation": result.get("explanation", ""),
                 }
-            except json.JSONDecodeError:
-                # If JSON parsing fails, try to extract code directly
-                logger.warning("Failed to parse JSON response, extracting code directly")
-                return {
-                    "query": content,
-                    "query_type": query_type_label,
-                    "explanation": f"Generated {query_type_label} query",
-                }
+            except (json.JSONDecodeError, ValueError, KeyError, IndexError) as e:
+                # If JSON parsing fails, log and raise an error instead of returning bad content
+                logger.warning(
+                    "Failed to parse JSON response from LLM",
+                    error=str(e),
+                    content_preview=content[:200] if content else "empty",
+                )
+                raise LLMResponseError(
+                    f"Failed to parse query response from LLM: {str(e)}"
+                )
 
         except Exception as e:
             logger.error("Error generating query", error=str(e))
@@ -143,18 +149,16 @@ Data Columns: {columns}
 Sample Data (first 10 rows):
 {json.dumps(rows, indent=2)}
 
-Total Rows: {query_result.get('row_count', len(rows))}
+Total Rows: {query_result.get("row_count", len(rows))}
 
 Recommend the best visualization for this data."""
 
         try:
-            model = genai.GenerativeModel(
-                self.model_name,
-                system_instruction=system_instruction,
-            )
-            response = await model.generate_content_async(
-                user_message,
-                generation_config=GenerationConfig(
+            response = await self.client.aio.models.generate_content(
+                model=self.model_name,
+                contents=user_message,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
                     max_output_tokens=2048,
                     response_mime_type="application/json",
                 ),
@@ -191,7 +195,9 @@ Recommend the best visualization for this data."""
 
         return {
             "chart_type": "bar",
-            "title": natural_language[:50] + "..." if len(natural_language) > 50 else natural_language,
+            "title": natural_language[:50] + "..."
+            if len(natural_language) > 50
+            else natural_language,
             "description": "Data visualization",
             "chart_config": {
                 "x_axis": {"data_key": x_key, "label": x_key},
@@ -208,9 +214,10 @@ Recommend the best visualization for this data."""
         """Check if Gemini API is available."""
         try:
             # Simple API check - just verify we can create a short message
-            response = await self.model.generate_content_async(
-                "Hi",
-                generation_config=GenerationConfig(max_output_tokens=10),
+            response = await self.client.aio.models.generate_content(
+                model=self.model_name,
+                contents="Hi",
+                config=types.GenerateContentConfig(max_output_tokens=10),
             )
             return bool(response.text)
         except Exception as e:
@@ -251,13 +258,11 @@ Respond with a JSON object containing:
         )
 
         try:
-            model = genai.GenerativeModel(
-                self.model_name,
-                system_instruction=system_instruction,
-            )
-            response = await model.generate_content_async(
-                user_message,
-                generation_config=GenerationConfig(
+            response = await self.client.aio.models.generate_content(
+                model=self.model_name,
+                contents=user_message,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
                     max_output_tokens=8192,
                     response_mime_type="application/json",
                 ),
@@ -275,9 +280,21 @@ Respond with a JSON object containing:
                     json_str = content.strip()
 
                 result = json.loads(json_str)
+
+                # Handle case where LLM returns an array instead of an object
+                if isinstance(result, list) and len(result) > 0:
+                    result = result[0]
+
+                # Ensure components have required fields with proper defaults
+                components = result.get("components", [])
+                if isinstance(components, list):
+                    for comp in components:
+                        if isinstance(comp, dict) and comp.get("data_keys") is None:
+                            comp["data_keys"] = []
+
                 return {
                     "react_code": result.get("react_code", ""),
-                    "components": result.get("components", []),
+                    "components": components,
                     "reasoning": result.get("reasoning", ""),
                     "model": self.model_name,
                 }
@@ -317,7 +334,9 @@ Respond with a JSON object containing:
             parts.append("\n--- Data Source Schemas ---")
             for schema in dashboard_context["schemas"]:
                 parts.append(f"\nData Source: {schema.get('name', 'Unknown')}")
-                parts.append(f"Schema:\n{json.dumps(schema.get('schema', {}), indent=2)}")
+                parts.append(
+                    f"Schema:\n{json.dumps(schema.get('schema', {}), indent=2)}"
+                )
 
         # Add sample data
         if data_samples:
@@ -326,14 +345,18 @@ Respond with a JSON object containing:
                 parts.append(f"\nData Source: {sample.get('name', 'Unknown')}")
                 rows = sample.get("rows", [])[:10]
                 parts.append(f"Columns: {sample.get('columns', [])}")
-                parts.append(f"Sample Rows ({len(rows)} of {sample.get('total_rows', 0)}):")
+                parts.append(
+                    f"Sample Rows ({len(rows)} of {sample.get('total_rows', 0)}):"
+                )
                 parts.append(json.dumps(rows, indent=2))
 
         # Add preferences if provided
         if preferences:
             parts.append("\n--- Visualization Preferences ---")
             if preferences.get("chart_types"):
-                parts.append(f"Preferred chart types: {', '.join(preferences['chart_types'])}")
+                parts.append(
+                    f"Preferred chart types: {', '.join(preferences['chart_types'])}"
+                )
             if preferences.get("color_scheme"):
                 parts.append(f"Color scheme: {preferences['color_scheme']}")
             if preferences.get("layout"):
