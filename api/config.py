@@ -30,11 +30,18 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/starkiller"
 
     # LLM Configuration
-    llm_provider: Literal["anthropic", "gemini"] = "anthropic"
+    llm_provider: Literal["anthropic", "gemini", "bedrock"] = "anthropic"
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-sonnet-4-5-20250929"
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
+
+    # AWS Bedrock Configuration
+    bedrock_region: str = "us-east-1"
+    bedrock_model_id: str = "us.anthropic.claude-3-5-sonnet-20241022-v2:0"  # Cross-region inference profile
+    bedrock_access_key_id: str = ""      # Optional - uses AWS credential chain if empty
+    bedrock_secret_access_key: str = ""  # Optional - uses AWS credential chain if empty
+    bedrock_session_token: str = ""      # Optional - for temporary credentials
 
     @property
     def is_development(self) -> bool:

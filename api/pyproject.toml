@@ -20,6 +20,8 @@ dependencies = [
     # LLM Providers
     "anthropic>=0.76.0",
     "google-genai>=0.1.0",
+    "aioboto3>=13.0.0",  # Async AWS SDK wrapper
+    "boto3>=1.34.0",     # AWS SDK for Python
 
     # Data Processing
     "pandas>=2.0.3",
